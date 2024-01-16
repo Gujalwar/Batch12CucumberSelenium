@@ -12,7 +12,7 @@ Feature: Login as  different users using Scenario Outline
       | sparrowjack@gmail.com | sparrow1      | Jack            |
       | Gylych1110@gmail.com  | Alperenmehmet | Gylych          |
 
-@rerun
+@smoke
   Scenario Outline: DD Account Test "<name>" with "<username>"
     Given The user is on the login page
     When The user logs in using "<username>" and "<password>"
