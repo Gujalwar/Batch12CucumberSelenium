@@ -1,7 +1,7 @@
 @login
 Feature: User should be able to login
 
-  @Teacher
+
   Scenario: Login As a Teacher
     Given The user is on the login page
     When  The user enters teacher credentials
