@@ -12,61 +12,51 @@ import org.openqa.selenium.safari.SafariDriver;
 
 public class Driver {
 
-    private Driver() {}
+    private Driver() {
+    }
 
-    private static WebDriver driver;
+    // InheritableThreadLocal  --> this is like a container, bag, pool.
+    // in this pool we can have separate objects for each thread (features)
+    // for each thread, in InheritableThreadLocal we can have separate object for that thread
+    // driver class will provide separate webdriver object per thread
+    private static InheritableThreadLocal<WebDriver> driverPool = new InheritableThreadLocal<>();
 
     public static WebDriver get() {
-        if (driver == null) {
-            String browser = ConfigurationReader.get("browser");
+        //if this thread doesn't have driver - create it and add to pool
+        if (driverPool.get() == null) {
+//            if we pass the driver from terminal then use that one
+//           if we do not pass the driver from terminal then use the one properties file
+            String browser = System.getProperty("browser") != null ? browser = System.getProperty("browser") : ConfigurationReader.get("browser");
             switch (browser) {
-                case "chrome": //Chrome - chrome - cHROME
-                    // selenium-java --> before version  4.6.0
-                    driver = new ChromeDriver(); // Polymorphism
-                    break;
-                case "chrome-headless":
-
-                    driver = new ChromeDriver(new ChromeOptions());
+                case "chrome":
+                    driverPool.set(new ChromeDriver());
                     break;
                 case "firefox":
-
-                    driver = new FirefoxDriver();
-                    break;
-                case "firefox-headless":
-
-                    driver = new FirefoxDriver(new FirefoxOptions());
+                    driverPool.set(new FirefoxDriver());
                     break;
                 case "ie":
                     if (!System.getProperty("os.name").toLowerCase().contains("windows"))
                         throw new WebDriverException("Your OS doesn't support Internet Explorer");
-
-                    driver = new InternetExplorerDriver();
+                    driverPool.set(new InternetExplorerDriver());
                     break;
-
                 case "edge":
                     if (!System.getProperty("os.name").toLowerCase().contains("windows"))
                         throw new WebDriverException("Your OS doesn't support Edge");
-
-                    driver = new EdgeDriver();
+                    driverPool.set(new EdgeDriver());
                     break;
-
                 case "safari":
                     if (!System.getProperty("os.name").toLowerCase().contains("mac"))
                         throw new WebDriverException("Your OS doesn't support Safari");
-
-                    driver = new SafariDriver();
+                    driverPool.set(new SafariDriver());
                     break;
+
             }
-
         }
-        return driver;
+        return driverPool.get();
     }
-
-    public static void closeDriver() {
-        if (driver != null) {
-            driver.quit();
-            driver = null;
-        }
+    public static void closeDriver () {
+        driverPool.get().quit();
+        driverPool.remove();
     }
 
 }
